@@ -73,6 +73,7 @@ public static class DataSeeder
         };
 
         await context.Users.AddRangeAsync(users.Select(u => u.User));
+        await context.SaveChangesAsync();
 
         var group = new Group
         {
@@ -83,6 +84,7 @@ public static class DataSeeder
             CreatedAt = DateTime.UtcNow
         };
         await context.Groups.AddAsync(group);
+        await context.SaveChangesAsync();
 
         var memberships = users.Select(u => new GroupMembership
         {
@@ -95,7 +97,6 @@ public static class DataSeeder
             JoinedAt = DateTime.UtcNow
         });
         await context.GroupMemberships.AddRangeAsync(memberships);
-
         await context.SaveChangesAsync();
 
         // Geçmiş nöbetler
