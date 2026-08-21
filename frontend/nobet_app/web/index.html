@@ -31,31 +31,6 @@
 
   <title>Nöbet Sistemi</title>
   <link rel="manifest" href="manifest.json">
-
-  <!-- 🔧 Firebase web config — YOUR_* değerlerini Firebase Console'dan al -->
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-    import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging.js';
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBE1A1VkNdylEMClP5KlIlu-vdPRTt_a24",
-  authDomain: "asker-nobet-sistemi.firebaseapp.com",
-  projectId: "asker-nobet-sistemi",
-  storageBucket: "asker-nobet-sistemi.firebasestorage.app",
-  messagingSenderId: "897670122048",
-  appId: "1:897670122048:web:bd5ad001f64c15a2a92da5",
-  measurementId: "G-1WKBK58BGP"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const messaging = getMessaging(app);
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('firebase-messaging-sw.js')
-        .then(reg => getMessaging(app))
-        .catch(err => console.warn('SW register failed:', err));
-    }
-  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

@@ -56,10 +56,19 @@ public static class InfrastructureServiceExtensions
     {
         if (FirebaseApp.DefaultInstance != null) return;
 
+        // Production'da (ör. Railway) servis hesabı bir dosya olarak deploy
+        // edilmiyor — bunun yerine tüm JSON içeriği Firebase__ServiceAccountJson
+        // ortam değişkeninde tutulur. Yerel geliştirmede ise dosya yolu (
+        // Firebase:ServiceAccountPath) kullanılmaya devam eder.
+        var credentialJson = configuration["Firebase:ServiceAccountJson"];
         var credentialPath = configuration["Firebase:ServiceAccountPath"];
         GoogleCredential credential;
 
-        if (!string.IsNullOrEmpty(credentialPath) && File.Exists(credentialPath))
+        if (!string.IsNullOrWhiteSpace(credentialJson))
+        {
+            credential = GoogleCredential.FromJson(credentialJson);
+        }
+        else if (!string.IsNullOrEmpty(credentialPath) && File.Exists(credentialPath))
         {
             credential = GoogleCredential.FromFile(credentialPath);
         }

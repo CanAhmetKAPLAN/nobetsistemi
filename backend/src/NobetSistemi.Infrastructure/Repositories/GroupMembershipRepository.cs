@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using NobetSistemi.Domain.Entities;
-using NobetSistemi.Domain.Enums;
 using NobetSistemi.Domain.Interfaces;
 using NobetSistemi.Infrastructure.Data;
 
@@ -26,7 +25,7 @@ public class GroupMembershipRepository : BaseRepository<GroupMembership>, IGroup
 
     public async Task<IEnumerable<GroupMembership>> GetActiveMembersAsync(Guid groupId) =>
         await _dbSet.Include(m => m.User)
-            .Where(m => m.GroupId == groupId && m.IsActive && m.Role == GroupRole.Member)
+            .Where(m => m.GroupId == groupId && m.IsActive)
             .ToListAsync();
 
     public async Task DecayAllScoresAsync(double factor) =>
