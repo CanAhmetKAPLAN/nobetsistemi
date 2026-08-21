@@ -37,40 +37,46 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.groups),
-            title: Text(groupProvider.currentGroup?.name ?? '...'),
-            subtitle: const Text('Grup Değiştir'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, '/group-select');
-            },
-          ),
-          const Divider(),
-          _tile(context, Icons.dashboard, 'Dashboard', '/dashboard'),
-          _tile(context, Icons.calendar_today, 'Nöbet Listesi', '/duties'),
-          _tile(context, Icons.calendar_month, 'Aylık Takvim', '/monthly-calendar'),
-          _tile(context, Icons.leaderboard, 'Puan Tablosu', '/leaderboard'),
-          _tile(context, Icons.history, 'Geçmiş Puanlar', '/score-history'),
-          _tile(context, Icons.beach_access, 'İzin Talepleri', '/leaves'),
-          _tile(context, Icons.swap_horiz, 'Nöbet Değişim', '/swaps'),
-          ListTile(
-            leading: Badge(
-              isLabelVisible: notif.unreadCount > 0,
-              label: Text('${notif.unreadCount}'),
-              child: const Icon(Icons.notifications),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.groups),
+                  title: Text(groupProvider.currentGroup?.name ?? '...'),
+                  subtitle: const Text('Grup Değiştir'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/group-select');
+                  },
+                ),
+                const Divider(),
+                _tile(context, Icons.dashboard, 'Dashboard', '/dashboard'),
+                _tile(context, Icons.calendar_today, 'Nöbet Listesi', '/duties'),
+                _tile(context, Icons.calendar_month, 'Aylık Takvim', '/monthly-calendar'),
+                _tile(context, Icons.leaderboard, 'Puan Tablosu', '/leaderboard'),
+                _tile(context, Icons.history, 'Geçmiş Puanlar', '/score-history'),
+                _tile(context, Icons.beach_access, 'İzin Talepleri', '/leaves'),
+                _tile(context, Icons.swap_horiz, 'Nöbet Değişim', '/swaps'),
+                ListTile(
+                  leading: Badge(
+                    isLabelVisible: notif.unreadCount > 0,
+                    label: Text('${notif.unreadCount}'),
+                    child: const Icon(Icons.notifications),
+                  ),
+                  title: const Text('Bildirimler'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/notifications');
+                  },
+                ),
+                if (isAdmin) ...[
+                  const Divider(),
+                  _tile(context, Icons.admin_panel_settings, 'Admin Panel', '/admin'),
+                ],
+              ],
             ),
-            title: const Text('Bildirimler'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, '/notifications');
-            },
           ),
-          if (isAdmin) ...[
-            const Divider(),
-            _tile(context, Icons.admin_panel_settings, 'Admin Panel', '/admin'),
-          ],
-          const Spacer(),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout, color: AppTheme.error),
