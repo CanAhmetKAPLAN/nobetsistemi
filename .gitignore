@@ -1,0 +1,44 @@
+# ---- Secrets — never commit ----
+**/appsettings.Development.json
+**/appsettings.Production.json
+**/appsettings.Local.json
+**/firebase-service-account.json
+**/google-services.json
+**/GoogleService-Info.plist
+**/key.properties
+*.pfx
+*.jks
+*.keystore
+.env
+.env.*
+
+# ---- .NET / backend ----
+backend/**/bin/
+backend/**/obj/
+*.user
+*.suo
+.vs/
+
+# ---- Flutter / frontend ----
+frontend/nobet_app/build/
+frontend/nobet_app/.dart_tool/
+frontend/nobet_app/.flutter-plugins
+frontend/nobet_app/.flutter-plugins-dependencies
+frontend/nobet_app/.pub-cache/
+frontend/nobet_app/.pub/
+frontend/nobet_app/**/ephemeral/
+frontend/nobet_app/android/local.properties
+frontend/nobet_app/android/.gradle/
+frontend/nobet_app/android/app/debug/
+frontend/nobet_app/android/app/profile/
+frontend/nobet_app/android/app/release/
+
+# ---- Local tooling ----
+.claude/
+
+# ---- Editors / OS ----
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db

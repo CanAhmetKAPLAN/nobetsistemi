@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/NobetSistemi.API/NobetSistemi.API.csproj" />
+    <Project Path="src/NobetSistemi.Application/NobetSistemi.Application.csproj" />
+    <Project Path="src/NobetSistemi.Domain/NobetSistemi.Domain.csproj" />
+    <Project Path="src/NobetSistemi.Infrastructure/NobetSistemi.Infrastructure.csproj" />
+  </Folder>
+</Solution>
