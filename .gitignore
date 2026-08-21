@@ -35,6 +35,7 @@ frontend/nobet_app/android/app/release/
 
 # ---- Local tooling ----
 .claude/
+frontend/nobet_app/.firebase/
 
 # ---- Editors / OS ----
 .vscode/

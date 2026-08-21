@@ -1,5 +1,5 @@
 class ApiConstants {
-  static const String baseUrl = 'http://localhost:5150/api';
+  static const String baseUrl = 'https://api.nobetsistemi.online/api';
 
   static const String login = '$baseUrl/auth/login';
   static const String register = '$baseUrl/auth/register';
