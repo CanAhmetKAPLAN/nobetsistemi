@@ -118,13 +118,16 @@ public class DutyService : IDutyService
 
     /// <summary>
     /// Belirli bir tarih aralığındaki OTOMATİK atanmış nöbetleri güncel üye
-    /// listesi ve puanlarla yeniden değerlendirir — sonradan gruba katılan
+    /// listesi ve puanlarla baştan yeniden hesaplar — sonradan gruba katılan
     /// biri dahil olsun, izin/manuel değişiklik sonrası açılan puan farkı
     /// kendini düzeltsin diye günlük arka plan servisi tarafından da
-    /// çağrılır. SADECE atanan kişi gerçekten değişiyorsa o günü silip
-    /// yeniden oluşturur (ve ilgili kişilere bildirim gönderir) — kişi
-    /// aynı kalıyorsa satıra dokunmaz, gereksiz "nöbetiniz değişti"
-    /// bildirim spam'i olmasın diye. Manuel atanmış nöbetlere ve geçmiş
+    /// çağrılır. Aralıktaki tüm otomatik atamalar önce tamamen silinip
+    /// puanları geri alınır, SONRA sıfırdan yeniden dağıtılır — böylece
+    /// simülasyon, aralıkta hiç kayıt yokmuş gibi (ilk seferki gibi) çalışır;
+    /// yarım bırakılmış eski kayıtlar hafta sonu sayımı gibi hesaplara
+    /// karışıp tutarsız sonuç üretmez. Kişi değişmeyen günler için bildirim
+    /// gönderilmez, sadece gerçekten el değiştiren günler için ilgili iki
+    /// kişiye de haber verilir. Manuel atanmış nöbetlere ve geçmiş
     /// (bugünden önceki) tarihlere asla dokunulmaz.
     /// </summary>
     public async Task<AutoFillResultDto> RebalanceAsync(RebalanceDutiesDto dto)
@@ -142,11 +145,12 @@ public class DutyService : IDutyService
 
         var existingDuties = (await _dutyRepository.GetByDateRangeAsync(start, end)).ToList();
         var manualDates = existingDuties.Where(d => !d.IsAutoAssigned).Select(d => d.Date.Date).ToHashSet();
-        var autoByDate = existingDuties.Where(d => d.IsAutoAssigned).ToDictionary(d => d.Date.Date);
+        var autoDuties = existingDuties.Where(d => d.IsAutoAssigned).ToList();
+        var oldAssigneeByDate = autoDuties.ToDictionary(d => d.Date.Date, d => (d.UserId, d.User?.Name ?? string.Empty));
 
-        // Simülasyonun güncel puanlarla baştan başlayabilmesi için önce tüm
-        // otomatik atamaların puan etkisini geri al (satırları henüz silmeden).
-        foreach (var duty in autoByDate.Values)
+        // Aralıktaki tüm otomatik atamaları tamamen sil ve puan etkilerini
+        // geri al — simülasyon, ilk seferki gibi sıfırdan başlasın diye.
+        foreach (var duty in autoDuties)
         {
             double weight = _assignment.GetDayWeight(duty.Date);
             var membership = await _membershipRepository.GetAsync(duty.GroupId, duty.UserId);
@@ -155,6 +159,7 @@ public class DutyService : IDutyService
                 membership.Score = Math.Round(membership.Score - weight, 4);
                 _membershipRepository.Update(membership);
             }
+            _dutyRepository.Delete(duty);
         }
         await _dutyRepository.SaveChangesAsync();
 
@@ -165,7 +170,7 @@ public class DutyService : IDutyService
         {
             if (manualDates.Contains(date.Date)) { alreadyFilled++; continue; }
 
-            var existing = autoByDate.GetValueOrDefault(date.Date);
+            var hadPrevious = oldAssigneeByDate.TryGetValue(date.Date, out var previous);
 
             try
             {
@@ -173,23 +178,6 @@ public class DutyService : IDutyService
                 double weight = _assignment.GetDayWeight(date);
                 selected.Score = Math.Round(selected.Score + weight, 4);
                 _membershipRepository.Update(selected);
-
-                if (existing is not null && existing.UserId == selected.UserId)
-                {
-                    // Kişi değişmedi — satırı olduğu gibi bırak, sadece puanı geri ekle.
-                    await _dutyRepository.SaveChangesAsync();
-                    duties.Add(MapToDto(existing));
-                    unchanged++;
-                    continue;
-                }
-
-                if (existing is not null)
-                {
-                    _dutyRepository.Delete(existing);
-                    await _notificationService.CreateAsync(existing.UserId,
-                        "ℹ️ Nöbet Güncellendi",
-                        $"{date:dd/MM/yyyy} tarihli nöbetiniz, güncel adalet dengesi gözetilerek başka bir üyeye aktarıldı.");
-                }
 
                 var newDuty = new Duty
                 {
@@ -204,11 +192,26 @@ public class DutyService : IDutyService
                 await _dutyRepository.AddAsync(newDuty);
                 await _dutyRepository.SaveChangesAsync();
 
-                await _notificationService.CreateAsync(selected.UserId, "Otomatik Nöbet Atandı",
-                    $"{date:dd/MM/yyyy} tarihine otomatik nöbet atandınız. (Puan: +{weight:F2})");
+                bool sameAsBefore = hadPrevious && previous.UserId == selected.UserId;
+                if (sameAsBefore)
+                {
+                    unchanged++;
+                }
+                else
+                {
+                    if (hadPrevious)
+                    {
+                        await _notificationService.CreateAsync(previous.UserId,
+                            "ℹ️ Nöbet Güncellendi",
+                            $"{date:dd/MM/yyyy} tarihli nöbetiniz, güncel adalet dengesi gözetilerek başka bir üyeye aktarıldı.");
+                    }
+
+                    await _notificationService.CreateAsync(selected.UserId, "Otomatik Nöbet Atandı",
+                        $"{date:dd/MM/yyyy} tarihine otomatik nöbet atandınız. (Puan: +{weight:F2})");
+                    assigned++;
+                }
 
                 duties.Add(MapToDto(newDuty));
-                assigned++;
             }
             catch (AppException)
             {
