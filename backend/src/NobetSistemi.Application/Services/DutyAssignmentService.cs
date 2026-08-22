@@ -12,7 +12,8 @@ namespace NobetSistemi.Application.Services;
 /// SEÇİM MANTIĞI
 ///   1. Aktif grubun izinsiz, ardışık nöbet almamış üyeleri filtrelenir.
 ///   2. En düşük TotalScore'a sahip üye seçilir.
-///   3. Eşitlikte rastgele seçim yapılır.
+///   3. Eşitlikte, en uzun süredir nöbet tutmayan üye kazanır (deterministik —
+///      rastgele değil, böylece yeniden hesaplama gereksiz karışıklık yaratmaz).
 ///
 /// HAFTA SONU DENGESİ
 ///   Cumartesi/Pazar için o ay kaç kez hafta sonu nöbeti tutulduğu,
@@ -116,10 +117,29 @@ public class DutyAssignmentService : IDutyAssignmentService
             scored.Add((member, effective));
         }
 
-        // ─── En düşük effective score → rastgele tie-break ───────────────────
+        // ─── En düşük effective score → deterministik tie-break ──────────────
+        // Eşitlikte rastgele seçim yerine "en uzun süredir nöbet tutmayan"
+        // üye kazanır (hiç tutmamışsa öncelikli). Bu sayede aynı durumda
+        // (puanlar/üyeler değişmeden) yeniden çalıştırıldığında hep aynı
+        // sonuç çıkar — günlük otomatik yeniden dengeleme, gerçekte hiçbir
+        // şey değişmediğinde nöbetleri gereksiz yere karıştırmaz.
         double minScore = scored.Min(x => x.EffectiveScore);
-        var candidates  = scored.Where(x => x.EffectiveScore == minScore).ToList();
-        return candidates[Random.Shared.Next(candidates.Count)].Member;
+        var candidates  = scored.Where(x => x.EffectiveScore == minScore).Select(x => x.Member).ToList();
+
+        if (candidates.Count == 1) return candidates[0];
+
+        var withLastDuty = new List<(GroupMembership Member, DateTime LastDuty)>();
+        foreach (var member in candidates)
+        {
+            var lastDuty = await _dutyRepository.GetLastDutyDateBeforeAsync(member.UserId, date);
+            withLastDuty.Add((member, lastDuty ?? DateTime.MinValue));
+        }
+
+        return withLastDuty
+            .OrderBy(x => x.LastDuty)
+            .ThenBy(x => x.Member.UserId)
+            .First()
+            .Member;
     }
 
     /// <summary>

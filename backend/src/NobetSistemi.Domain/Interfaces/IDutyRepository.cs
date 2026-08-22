@@ -13,4 +13,5 @@ public interface IDutyRepository : IRepository<Duty>
     Task<IEnumerable<(Guid UserId, string UserName, int Year, int Month, int Count)>> GetMonthlyScoresAsync();
     Task<int> GetWeekendDutyCountAsync(Guid userId, DateTime monthStart, DateTime monthEnd);
     Task<IEnumerable<Duty>> GetAllDutiesOnDateIgnoringGroupAsync(DateTime date);
+    Task<DateTime?> GetLastDutyDateBeforeAsync(Guid userId, DateTime beforeDate);
 }

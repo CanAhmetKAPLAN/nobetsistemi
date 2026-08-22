@@ -86,4 +86,11 @@ public class DutyRepository : BaseRepository<Duty>, IDutyRepository
             .Where(d => d.Date >= dayStart && d.Date < dayEnd)
             .ToListAsync();
     }
+
+    public async Task<DateTime?> GetLastDutyDateBeforeAsync(Guid userId, DateTime beforeDate) =>
+        await _dbSet
+            .Where(d => d.UserId == userId && d.Date < beforeDate.Date)
+            .OrderByDescending(d => d.Date)
+            .Select(d => (DateTime?)d.Date)
+            .FirstOrDefaultAsync();
 }
