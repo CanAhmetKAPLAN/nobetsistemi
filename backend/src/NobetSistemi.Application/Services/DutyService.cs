@@ -116,6 +116,74 @@ public class DutyService : IDutyService
         };
     }
 
+    /// <summary>
+    /// Belirli bir tarih aralığındaki OTOMATİK atanmış nöbetleri iptal edip
+    /// (puanlarını geri alarak) güncel üye listesiyle yeniden dağıtır —
+    /// sonradan gruba katılan biri, önceden doldurulmuş aylara dahil
+    /// olabilsin diye. Manuel atanmış nöbetlere dokunulmaz, geçmiş
+    /// (bugünden önceki) tarihler asla değiştirilmez.
+    /// </summary>
+    public async Task<AutoFillResultDto> RebalanceAsync(RebalanceDutiesDto dto)
+    {
+        _currentGroupContext.RequireGroupId();
+        _currentGroupContext.RequireAdmin();
+
+        var today = DateTime.UtcNow.Date;
+        var start = DateTime.SpecifyKind(dto.FromDate.Date, DateTimeKind.Utc);
+        var end = DateTime.SpecifyKind(dto.ToDate.Date, DateTimeKind.Utc);
+        if (start < today) start = today;
+
+        if (end < start)
+            throw new AppException("Bitiş tarihi başlangıçtan önce olamaz.");
+
+        var existingDuties = (await _dutyRepository.GetByDateRangeAsync(start, end)).ToList();
+
+        foreach (var duty in existingDuties.Where(d => d.IsAutoAssigned))
+        {
+            double weight = _assignment.GetDayWeight(duty.Date);
+            var membership = await _membershipRepository.GetAsync(duty.GroupId, duty.UserId);
+            if (membership is not null && membership.Score >= weight)
+            {
+                membership.Score = Math.Round(membership.Score - weight, 4);
+                _membershipRepository.Update(membership);
+            }
+            _dutyRepository.Delete(duty);
+        }
+        await _dutyRepository.SaveChangesAsync();
+
+        var manualDates = existingDuties
+            .Where(d => !d.IsAutoAssigned)
+            .Select(d => d.Date.Date)
+            .ToHashSet();
+
+        int assigned = 0, skipped = 0, alreadyFilled = 0;
+        var duties = new List<DutyDto>();
+
+        for (var date = start; date <= end; date = date.AddDays(1))
+        {
+            if (manualDates.Contains(date.Date)) { alreadyFilled++; continue; }
+
+            try
+            {
+                var assignedDuty = await AutoAssignInternalAsync(date);
+                duties.Add(assignedDuty);
+                assigned++;
+            }
+            catch (AppException)
+            {
+                skipped++;
+            }
+        }
+
+        return new AutoFillResultDto
+        {
+            AssignedCount = assigned,
+            SkippedCount = skipped,
+            AlreadyFilledCount = alreadyFilled,
+            Duties = duties
+        };
+    }
+
     public async Task<DutyDto> CreateManualAsync(CreateDutyDto dto)
     {
         var groupId = _currentGroupContext.RequireGroupId();

@@ -80,6 +80,13 @@ public class DutiesController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("rebalance")]
+    public async Task<ActionResult<AutoFillResultDto>> Rebalance([FromBody] RebalanceDutiesDto dto)
+    {
+        var result = await _dutyService.RebalanceAsync(dto);
+        return Ok(result);
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {

@@ -17,6 +17,7 @@ class ApiConstants {
   static const String dutiesByMonth = '$baseUrl/duties/by-month';
   static const String dutiesMonthlyScores = '$baseUrl/duties/monthly-scores';
   static const String dutiesAutoFillMonth = '$baseUrl/duties/auto-fill-month';
+  static const String dutiesRebalance = '$baseUrl/duties/rebalance';
 
   static const String leaves = '$baseUrl/leaves';
   static const String leavesMy = '$baseUrl/leaves/my';

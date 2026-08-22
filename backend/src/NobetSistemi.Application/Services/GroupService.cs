@@ -68,21 +68,44 @@ public class GroupService : IGroupService
         if (existing is not null)
             throw new ConflictException("Bu gruba zaten üyesiniz.");
 
+        var currentMembers = (await _membershipRepository.GetMembersAsync(group.Id))
+            .Where(m => m.IsActive)
+            .ToList();
+
         var membership = new GroupMembership
         {
             Id = Guid.NewGuid(),
             GroupId = group.Id,
             UserId = userId,
             Role = GroupRole.Member,
-            Score = 0,
+            Score = ComputeJoinStartScore(currentMembers),
             IsActive = true,
             JoinedAt = DateTime.UtcNow
         };
         await _membershipRepository.AddAsync(membership);
         await _membershipRepository.SaveChangesAsync();
 
-        var memberCount = (await _membershipRepository.GetMembersAsync(group.Id)).Count();
-        return MapToDto(group, membership.Role, memberCount);
+        return MapToDto(group, membership.Role, currentMembers.Count + 1);
+    }
+
+    /// <summary>
+    /// Sonradan katılan bir üye 0 puanla başlarsa, atama algoritması onu
+    /// grup ortalaması yakalanana kadar art arda seçer — bu haksız bir yük
+    /// oluşturur. Grubun mevcut ortalaması 1'in üzerindeyse yeni üye, puan
+    /// adımlarının (0.25/0.50/0.75/1.00) BİR ALTINA yuvarlanmış ortalamayla
+    /// başlar (en yakına değil — üyeye küçük bir avantaj bırakmak için).
+    /// Ortalama 1 veya altındaysa grup zaten yeni sayılır, 0'dan başlamak
+    /// sorun yaratmaz.
+    /// </summary>
+    private static double ComputeJoinStartScore(List<GroupMembership> currentMembers)
+    {
+        if (currentMembers.Count == 0) return 0;
+
+        var avg = currentMembers.Average(m => m.Score);
+        if (avg <= 1) return 0;
+
+        var steps = Math.Floor(Math.Round(avg / 0.25, 6));
+        return Math.Round(steps * 0.25, 2);
     }
 
     public async Task<IEnumerable<GroupDto>> GetMyGroupsAsync(Guid userId)

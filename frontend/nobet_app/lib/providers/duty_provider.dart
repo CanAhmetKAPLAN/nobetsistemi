@@ -132,6 +132,25 @@ class DutyProvider extends ChangeNotifier {
     return result;
   }
 
+  /// Belirtilen tarih aralığındaki otomatik atanmış nöbetleri güncel üye
+  /// listesiyle yeniden dağıtır (sonradan gruba katılan üyeleri de dahil
+  /// eder). Manuel atanmış nöbetlere ve geçmiş tarihlere dokunulmaz.
+  Future<Map<String, dynamic>> rebalance(
+    String token,
+    DateTime fromDate,
+    DateTime toDate,
+  ) async {
+    final api = ApiService(token: token, groupId: GroupSession.currentGroupId);
+    final result =
+        await api.post(ApiConstants.dutiesRebalance, {
+              'fromDate': fromDate.toUtc().toIso8601String(),
+              'toDate': toDate.toUtc().toIso8601String(),
+            })
+            as Map<String, dynamic>;
+    await fetchAll(token);
+    return result;
+  }
+
   Future<void> fetchMonthlyScores(String token) async {
     try {
       final api = ApiService(token: token, groupId: GroupSession.currentGroupId);

@@ -11,6 +11,7 @@ public interface IDutyService
     Task<IEnumerable<DutyDto>> GetByYearMonthAsync(int year, int month);
     Task<IEnumerable<MonthlyScoreDto>> GetMonthlyScoresAsync();
     Task<AutoFillResultDto> AutoFillMonthAsync(int year, int month);
+    Task<AutoFillResultDto> RebalanceAsync(RebalanceDutiesDto dto);
     Task<DutyDto> CreateManualAsync(CreateDutyDto dto);
     Task<DutyDto> AutoAssignAsync(AutoAssignDutyDto dto);
     Task DeleteAsync(Guid id);

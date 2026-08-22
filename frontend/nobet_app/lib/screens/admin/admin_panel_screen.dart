@@ -130,6 +130,96 @@ class _DutyTab extends StatelessWidget {
     );
   }
 
+  Future<void> _rebalance(BuildContext context) async {
+    DateTime? fromDate = DateTime.now();
+    DateTime? toDate = DateTime.now().add(const Duration(days: 30));
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, set) => AlertDialog(
+          title: const Text('Nöbeti Güncelle'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Seçilen aralıktaki otomatik atanmış nöbetler, güncel üye '
+                'listesiyle yeniden dağıtılır (yeni katılanlar dahil edilir). '
+                'Manuel atamalar ve geçmiş tarihler değişmez.',
+                style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.calendar_today, color: AppTheme.primary),
+                title: Text(fromDate == null
+                    ? 'Başlangıç tarihi'
+                    : AppDateUtils.formatDate(fromDate!.toIso8601String())),
+                onTap: () async {
+                  final d = await showDatePicker(
+                    context: ctx,
+                    initialDate: fromDate ?? DateTime.now(),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 730)),
+                  );
+                  if (d != null) set(() => fromDate = d);
+                },
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.event, color: AppTheme.primary),
+                title: Text(toDate == null
+                    ? 'Bitiş tarihi'
+                    : AppDateUtils.formatDate(toDate!.toIso8601String())),
+                onTap: () async {
+                  final d = await showDatePicker(
+                    context: ctx,
+                    initialDate: toDate ?? DateTime.now(),
+                    firstDate: fromDate ?? DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 730)),
+                  );
+                  if (d != null) set(() => toDate = d);
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('İptal')),
+            ElevatedButton(
+              onPressed: () async {
+                if (fromDate == null || toDate == null) return;
+                Navigator.pop(ctx);
+                final token = context.read<AuthProvider>().token!;
+                try {
+                  final result = await context
+                      .read<DutyProvider>()
+                      .rebalance(token, fromDate!, toDate!);
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '${result['assignedCount']} nöbet yeniden atandı, '
+                        '${result['alreadyFilledCount']} manuel atama korundu, '
+                        '${result['skippedCount']} gün atlandı',
+                      ),
+                      backgroundColor: AppTheme.success,
+                    ),
+                  );
+                } catch (e) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.error),
+                  );
+                }
+              },
+              child: const Text('Güncelle'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final duties = context.watch<DutyProvider>().duties;
@@ -144,6 +234,14 @@ class _DutyTab extends StatelessWidget {
                   onPressed: () => _autoAssign(context),
                   icon: const Icon(Icons.auto_awesome),
                   label: const Text('Otomatik Ata'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _rebalance(context),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Nöbeti Güncelle'),
                 ),
               ),
             ],
