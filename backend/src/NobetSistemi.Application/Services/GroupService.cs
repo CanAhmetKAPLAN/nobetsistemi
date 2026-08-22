@@ -12,15 +12,18 @@ public class GroupService : IGroupService
     private readonly IGroupRepository _groupRepository;
     private readonly IGroupMembershipRepository _membershipRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IAutoScheduleService _autoScheduleService;
 
     public GroupService(
         IGroupRepository groupRepository,
         IGroupMembershipRepository membershipRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IAutoScheduleService autoScheduleService)
     {
         _groupRepository = groupRepository;
         _membershipRepository = membershipRepository;
         _userRepository = userRepository;
+        _autoScheduleService = autoScheduleService;
     }
 
     public async Task<GroupDto> CreateAsync(Guid userId, CreateGroupDto dto)
@@ -84,6 +87,19 @@ public class GroupService : IGroupService
         };
         await _membershipRepository.AddAsync(membership);
         await _membershipRepository.SaveChangesAsync();
+
+        // Grup en az 3 aktif üyeye ulaştıysa, önümüzdeki 2 aylık nöbet
+        // planını yeni üyeyi de kapsayacak şekilde güncelle. Planlama
+        // başarısız olsa bile katılım işlemini bozmasın.
+        try
+        {
+            await _autoScheduleService.EnsureInitialScheduleAsync(group.Id);
+        }
+        catch
+        {
+            // sessizce geç — üye zaten katıldı, planlama bir sonraki
+            // arka plan taramasında ya da manuel güncellemede düzelir
+        }
 
         return MapToDto(group, membership.Role, currentMembers.Count + 1);
     }

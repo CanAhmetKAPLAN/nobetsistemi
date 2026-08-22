@@ -42,12 +42,14 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ILeaveService, LeaveService>();
         services.AddScoped<ISwapService, SwapService>();
         services.AddScoped<IDutyAssignmentService, DutyAssignmentService>();
+        services.AddScoped<IAutoScheduleService, AutoScheduleService>();
 
         // FCM
         InitFirebase(configuration);
         services.AddScoped<IFcmNotificationService, FcmNotificationService>();
         services.AddHostedService<DutyReminderHostedService>();
         services.AddHostedService<MonthEndDecayHostedService>();
+        services.AddHostedService<AutoScheduleHostedService>();
 
         return services;
     }
