@@ -24,6 +24,7 @@ class ApiConstants {
 
   static const String swaps = '$baseUrl/swaps';
   static const String swapsMy = '$baseUrl/swaps/my';
+  static const String swapsIncoming = '$baseUrl/swaps/incoming';
   static const String swapsPending = '$baseUrl/swaps/pending';
 
   static const String notifications = '$baseUrl/notifications';

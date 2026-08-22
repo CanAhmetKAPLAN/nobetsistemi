@@ -107,6 +107,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               size: 18,
                             ),
                       isThreeLine: true,
+                      onTap: () {
+                        if (!n.isRead) provider.markAsRead(token, n.id);
+                        // Nöbet değişimiyle ilgili bildirimlerde direkt
+                        // değişim ekranına git (başlıkta "Değişim" geçen
+                        // tüm swap bildirimleri).
+                        if (n.title.contains('Değişim')) {
+                          Navigator.pushNamed(context, '/swaps');
+                        }
+                      },
                     ),
                   );
                 },

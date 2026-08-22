@@ -16,11 +16,21 @@ class SwapRequestScreen extends StatefulWidget {
   State<SwapRequestScreen> createState() => _SwapRequestScreenState();
 }
 
-class _SwapRequestScreenState extends State<SwapRequestScreen> {
+class _SwapRequestScreenState extends State<SwapRequestScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabCtrl;
+
   @override
   void initState() {
     super.initState();
+    _tabCtrl = TabController(length: 2, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+  }
+
+  @override
+  void dispose() {
+    _tabCtrl.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -29,9 +39,28 @@ class _SwapRequestScreenState extends State<SwapRequestScreen> {
     final groupId = context.read<GroupProvider>().currentGroup?.id;
     await Future.wait([
       context.read<SwapProvider>().fetchMy(token),
+      context.read<SwapProvider>().fetchIncoming(token),
       context.read<DutyProvider>().fetchByUser(token, userId),
       if (groupId != null) context.read<GroupProvider>().fetchMembers(token, groupId),
     ]);
+  }
+
+  Future<void> _respond(String id, bool approve) async {
+    try {
+      await context.read<SwapProvider>().review(context.read<AuthProvider>().token!, id, approve);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(approve ? 'Değişim onaylandı' : 'Değişim reddedildi'),
+          backgroundColor: approve ? AppTheme.success : AppTheme.error,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.error),
+      );
+    }
   }
 
   Future<void> _showCreateDialog() async {
@@ -136,12 +165,137 @@ class _SwapRequestScreenState extends State<SwapRequestScreen> {
     );
   }
 
+  Widget _sentList(SwapProvider provider) {
+    if (provider.swaps.isEmpty) {
+      return const Center(child: Text('Gönderdiğiniz değişim talebi yok.'));
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: provider.swaps.length,
+      itemBuilder: (ctx, i) {
+        final swap = provider.swaps[i];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            leading: const CircleAvatar(
+              backgroundColor: AppTheme.warning,
+              child: Icon(Icons.swap_horiz, color: Colors.white, size: 20),
+            ),
+            title: Text(
+              '${AppDateUtils.formatDate(swap.requesterDutyDate)} → ${swap.targetUserName}',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: Text(
+              swap.reason.isNotEmpty ? swap.reason : 'Gerekçe belirtilmemiş',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                StatusBadge(swap.status),
+                if (swap.status == 'Pending') ...[
+                  const SizedBox(width: 4),
+                  IconButton(
+                    icon: const Icon(Icons.cancel, color: AppTheme.error, size: 20),
+                    onPressed: () async {
+                      await context.read<SwapProvider>().cancel(
+                            context.read<AuthProvider>().token!,
+                            swap.id,
+                          );
+                    },
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _incomingList(SwapProvider provider) {
+    if (provider.incoming.isEmpty) {
+      return const Center(child: Text('Size gelen değişim talebi yok.'));
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: provider.incoming.length,
+      itemBuilder: (ctx, i) {
+        final swap = provider.incoming[i];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const CircleAvatar(
+                      backgroundColor: AppTheme.warning,
+                      child: Icon(Icons.swap_horiz, color: Colors.white, size: 20),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${swap.requesterName} • ${AppDateUtils.formatDate(swap.requesterDutyDate)}',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    StatusBadge(swap.status),
+                  ],
+                ),
+                if (swap.reason.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(swap.reason, style: const TextStyle(color: AppTheme.textSecondary)),
+                ],
+                if (swap.status == 'Pending') ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton.icon(
+                        onPressed: () => _respond(swap.id, false),
+                        icon: const Icon(Icons.close, color: AppTheme.error),
+                        label: const Text('Reddet', style: TextStyle(color: AppTheme.error)),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        onPressed: () => _respond(swap.id, true),
+                        icon: const Icon(Icons.check),
+                        label: const Text('Onayla'),
+                        style: ElevatedButton.styleFrom(backgroundColor: AppTheme.success),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SwapProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Nöbet Değişim Talepleri')),
+      appBar: AppBar(
+        title: const Text('Nöbet Değişim Talepleri'),
+        bottom: TabBar(
+          controller: _tabCtrl,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white60,
+          tabs: const [
+            Tab(text: 'Gönderdiklerim'),
+            Tab(text: 'Gelen Talepler'),
+          ],
+        ),
+      ),
       drawer: const AppDrawer(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showCreateDialog,
@@ -152,51 +306,13 @@ class _SwapRequestScreenState extends State<SwapRequestScreen> {
         onRefresh: _load,
         child: provider.loading
             ? const Center(child: CircularProgressIndicator())
-            : provider.swaps.isEmpty
-                ? const Center(child: Text('Değişim talebi bulunamadı.'))
-                : ListView.builder(
-                    padding: const EdgeInsets.all(12),
-                    itemCount: provider.swaps.length,
-                    itemBuilder: (ctx, i) {
-                      final swap = provider.swaps[i];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: AppTheme.warning,
-                            child: Icon(Icons.swap_horiz, color: Colors.white, size: 20),
-                          ),
-                          title: Text(
-                            '${AppDateUtils.formatDate(swap.requesterDutyDate)} → ${swap.targetUserName}',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          subtitle: Text(
-                            swap.reason.isNotEmpty ? swap.reason : 'Gerekçe belirtilmemiş',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              StatusBadge(swap.status),
-                              if (swap.status == 'Pending') ...[
-                                const SizedBox(width: 4),
-                                IconButton(
-                                  icon: const Icon(Icons.cancel, color: AppTheme.error, size: 20),
-                                  onPressed: () async {
-                                    await context.read<SwapProvider>().cancel(
-                                          context.read<AuthProvider>().token!,
-                                          swap.id,
-                                        );
-                                  },
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+            : TabBarView(
+                controller: _tabCtrl,
+                children: [
+                  _sentList(provider),
+                  _incomingList(provider),
+                ],
+              ),
       ),
     );
   }

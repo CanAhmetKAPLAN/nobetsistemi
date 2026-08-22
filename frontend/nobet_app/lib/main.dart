@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
 import 'core/group_routing.dart';
+import 'core/navigation.dart';
 import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
@@ -55,6 +56,7 @@ class NobetApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => GroupProvider()),
       ],
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'Nöbet Sistemi',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.dark,

@@ -6,11 +6,13 @@ import '../services/api_service.dart';
 
 class SwapProvider extends ChangeNotifier {
   List<SwapRequest> _swaps = [];
+  List<SwapRequest> _incoming = [];
   List<SwapRequest> _pending = [];
   bool _loading = false;
   String? _error;
 
   List<SwapRequest> get swaps => _swaps;
+  List<SwapRequest> get incoming => _incoming;
   List<SwapRequest> get pending => _pending;
   bool get loading => _loading;
   String? get error => _error;
@@ -29,6 +31,15 @@ class SwapProvider extends ChangeNotifier {
       _loading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> fetchIncoming(String token) async {
+    try {
+      final api = ApiService(token: token, groupId: GroupSession.currentGroupId);
+      final data = await api.get(ApiConstants.swapsIncoming) as List;
+      _incoming = data.map((e) => SwapRequest.fromJson(e)).toList();
+      notifyListeners();
+    } catch (_) {}
   }
 
   Future<void> fetchAll(String token) async {
@@ -75,8 +86,11 @@ class SwapProvider extends ChangeNotifier {
   Future<void> review(String token, String id, bool approve) async {
     final api = ApiService(token: token, groupId: GroupSession.currentGroupId);
     await api.put('${ApiConstants.swaps}/$id/review', {'approve': approve});
+    // Hem "gelen talepler" ekranından (hedef kullanıcı) hem admin panelinden
+    // çağrılabildiği için ilgili tüm listeleri tazeleriz.
+    await fetchIncoming(token);
+    await fetchMy(token);
     await fetchPending(token);
-    await fetchAll(token);
   }
 
   Future<void> cancel(String token, String id) async {

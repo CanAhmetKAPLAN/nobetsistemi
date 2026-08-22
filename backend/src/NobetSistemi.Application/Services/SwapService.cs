@@ -55,6 +55,13 @@ public class SwapService : ISwapService
         return swaps.Select(MapToDto);
     }
 
+    public async Task<IEnumerable<DutySwapRequestDto>> GetIncomingAsync(Guid targetUserId)
+    {
+        _currentGroupContext.RequireGroupId();
+        var swaps = await _swapRepository.GetByTargetUserIdAsync(targetUserId);
+        return swaps.Select(MapToDto);
+    }
+
     public async Task<IEnumerable<DutySwapRequestDto>> GetPendingAsync()
     {
         _currentGroupContext.RequireGroupId();
@@ -115,10 +122,16 @@ public class SwapService : ISwapService
     public async Task<DutySwapRequestDto> ReviewAsync(Guid id, Guid reviewerId, ReviewSwapRequestDto dto)
     {
         _currentGroupContext.RequireGroupId();
-        _currentGroupContext.RequireAdmin();
 
         var swap = await _swapRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Nöbet değişim talebi bulunamadı.");
+
+        // Değişimi, kendisine teklif edilen hedef kullanıcı ya da bir grup
+        // yöneticisi onaylayabilir/reddedebilir — admin onayına gerek yok.
+        bool isTarget = swap.TargetUserId == reviewerId;
+        bool isAdmin = _currentGroupContext.MembershipRole == GroupRole.Admin;
+        if (!isTarget && !isAdmin)
+            throw new UnauthorizedException("Bu talebi yalnızca hedef kullanıcı veya grup yöneticisi onaylayabilir.");
 
         if (swap.Status != SwapStatus.Pending)
             throw new AppException("Bu talep zaten değerlendirilmiş.");

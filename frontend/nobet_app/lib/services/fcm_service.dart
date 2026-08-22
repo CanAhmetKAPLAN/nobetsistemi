@@ -2,6 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants/api_constants.dart';
+import '../core/navigation.dart';
 import 'api_service.dart';
 import 'local_notification_service.dart';
 
@@ -24,6 +25,22 @@ Future<void> _handleMessage(RemoteMessage message) async {
     body: body,
     payload: type,
   );
+}
+
+/// Bildirim türüne göre uygulama içinde açılacak sayfa — dokunulduğunda
+/// kullanıcıyı ilgili ekrana götürür (ör. nöbet değişim bildirimleri
+/// doğrudan değişim sayfasını açar).
+String? _routeFor(String type) => switch (type) {
+      'swap_request' || 'swap_approved' || 'swap_rejected' => '/swaps',
+      'leave_approved' || 'leave_rejected' => '/leaves',
+      _ => null,
+    };
+
+void _navigateForMessage(RemoteMessage message) {
+  final type = message.data['type'] ?? '';
+  final route = _routeFor(type);
+  if (route == null) return;
+  navigatorKey.currentState?.pushNamed(route);
 }
 
 String _titleFor(String type) => switch (type) {
@@ -72,7 +89,14 @@ class FcmService {
     // Bildirime tıklanınca (uygulama arka plandayken)
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
       if (kDebugMode) debugPrint('FCM opened: ${message.data}');
+      _navigateForMessage(message);
     });
+
+    // Uygulama tamamen kapalıyken bir bildirime dokunularak açıldıysa
+    final initialMessage = await _messaging.getInitialMessage();
+    if (initialMessage != null) {
+      _navigateForMessage(initialMessage);
+    }
 
     // Web için ön plan bildirimleri göster
     await _messaging.setForegroundNotificationPresentationOptions(

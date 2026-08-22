@@ -47,6 +47,14 @@ public class SwapsController : ControllerBase
         return Ok(swaps);
     }
 
+    [HttpGet("incoming")]
+    public async Task<ActionResult<IEnumerable<DutySwapRequestDto>>> GetIncoming()
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var swaps = await _swapService.GetIncomingAsync(userId);
+        return Ok(swaps);
+    }
+
     [HttpPost]
     public async Task<ActionResult<DutySwapRequestDto>> Create([FromBody] CreateSwapRequestDto dto)
     {
