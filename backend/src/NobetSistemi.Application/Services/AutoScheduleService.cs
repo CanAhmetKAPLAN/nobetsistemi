@@ -29,34 +29,35 @@ public class AutoScheduleService : IAutoScheduleService
         _currentGroupContext = currentGroupContext;
     }
 
-    public async Task EnsureInitialScheduleAsync(Guid groupId)
+    /// <summary>
+    /// Günlük yenilemede yakın bu kadar gün sabit bırakılır — birinin nöbeti
+    /// son anda, hiç habersiz değişmesin diye. Katılım anındaki ilk planlama
+    /// bu tamponu kullanmaz (hemen tam güncel olmalı).
+    /// </summary>
+    private const int DailyRefreshFreezeDays = 2;
+
+    public Task EnsureInitialScheduleAsync(Guid groupId) => RebalanceWindowAsync(groupId, freezeDays: 0);
+
+    public Task RefreshScheduleAsync(Guid groupId) => RebalanceWindowAsync(groupId, freezeDays: DailyRefreshFreezeDays);
+
+    private async Task RebalanceWindowAsync(Guid groupId, int freezeDays)
     {
         if (!await HasEnoughMembersAsync(groupId)) return;
 
         _currentGroupContext.SetGroup(groupId, GroupRole.Admin);
 
         var today = DateTime.UtcNow.Date;
+        var from = today.AddDays(freezeDays);
         var endOfNextMonth = new DateTime(today.Year, today.Month, 1, 0, 0, 0, DateTimeKind.Utc)
             .AddMonths(2).AddDays(-1);
 
+        if (from > endOfNextMonth) return;
+
         await _dutyService.RebalanceAsync(new RebalanceDutiesDto
         {
-            FromDate = today,
+            FromDate = from,
             ToDate = endOfNextMonth
         });
-    }
-
-    public async Task ExtendRollingScheduleAsync(Guid groupId)
-    {
-        if (!await HasEnoughMembersAsync(groupId)) return;
-
-        _currentGroupContext.SetGroup(groupId, GroupRole.Admin);
-
-        var today = DateTime.UtcNow.Date;
-        var nextMonth = today.AddMonths(1);
-
-        await _dutyService.AutoFillMonthAsync(today.Year, today.Month);
-        await _dutyService.AutoFillMonthAsync(nextMonth.Year, nextMonth.Month);
     }
 
     private async Task<bool> HasEnoughMembersAsync(Guid groupId)

@@ -8,10 +8,13 @@ namespace NobetSistemi.Infrastructure.BackgroundServices;
 
 /// <summary>
 /// Her gün tüm grupları tarayıp, en az 3 aktif üyesi olanların nöbet
-/// takvimini "bu ay + gelecek ay" penceresinde eksiksiz tutar. Zaman
-/// ilerleyip yeni bir ay ufka girdiğinde bu servis onu otomatik doldurur.
-/// Uygulama başlar başlamaz da bir kez çalışır (yeni deploy/restart sonrası
-/// beklemeden güncel kalsın diye).
+/// takvimini "bugün + gelecek ay sonu" penceresinde günceller: hem boş
+/// günleri doldurur hem de güncel puanlara göre adaletsiz kalmış (ör. yeni
+/// katılan biri yüzünden dengesi bozulmuş) günleri yeniden dağıtır — yakın
+/// birkaç gün son anda sürpriz olmasın diye sabit bırakılır. Zaman ilerleyip
+/// yeni bir ay ufka girdiğinde onu da otomatik doldurur. Uygulama başlar
+/// başlamaz da bir kez çalışır (yeni deploy/restart sonrası beklemeden
+/// güncel kalsın diye).
 /// </summary>
 public class AutoScheduleHostedService : BackgroundService
 {
@@ -62,7 +65,7 @@ public class AutoScheduleHostedService : BackgroundService
             {
                 using var scope = _services.CreateScope();
                 var scheduleService = scope.ServiceProvider.GetRequiredService<IAutoScheduleService>();
-                await scheduleService.ExtendRollingScheduleAsync(groupId);
+                await scheduleService.RefreshScheduleAsync(groupId);
             }
             catch (Exception ex)
             {
