@@ -1,8 +1,8 @@
 # Nöbet Sistemi
 
-Bu proje, 11 kişilik bir grup için adil nöbet dağıtımı yapan mobil uyumlu bir sistemdir.
+Bu proje, adil nöbet dağıtımı yapan mobil uyumlu bir sistemdir.
 
-## 📱 Amaç
+##  Amaç
 
 - Asker arkadaş grubu içinde nöbetlerin adil şekilde dağıtılması
 - Her günün farklı puan değerine göre hesaplama yapılması
@@ -11,7 +11,7 @@ Bu proje, 11 kişilik bir grup için adil nöbet dağıtımı yapan mobil uyumlu
 
 ---
 
-## 🧠 Özellikler
+##  Özellikler
 
 ### Kullanıcılar
 - Giriş / kayıt olabilir
@@ -28,7 +28,7 @@ Bu proje, 11 kişilik bir grup için adil nöbet dağıtımı yapan mobil uyumlu
 
 ---
 
-## ⚙️ Teknolojiler
+##  Teknolojiler
 
 ### Backend
 - ASP.NET Core Web API
@@ -42,7 +42,7 @@ Bu proje, 11 kişilik bir grup için adil nöbet dağıtımı yapan mobil uyumlu
 
 ---
 
-## 📊 Puan Sistemi
+##  Puan Sistemi
 
 - Pazartesi: 0.25  
 - Salı: 0.25  
