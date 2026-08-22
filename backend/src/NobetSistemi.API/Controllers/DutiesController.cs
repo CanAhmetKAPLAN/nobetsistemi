@@ -11,10 +11,17 @@ namespace NobetSistemi.API.Controllers;
 public class DutiesController : ControllerBase
 {
     private readonly IDutyService _dutyService;
+    private readonly IAutoScheduleService _autoScheduleService;
+    private readonly ICurrentGroupContext _currentGroupContext;
 
-    public DutiesController(IDutyService dutyService)
+    public DutiesController(
+        IDutyService dutyService,
+        IAutoScheduleService autoScheduleService,
+        ICurrentGroupContext currentGroupContext)
     {
         _dutyService = dutyService;
+        _autoScheduleService = autoScheduleService;
+        _currentGroupContext = currentGroupContext;
     }
 
     [HttpGet]
@@ -63,6 +70,19 @@ public class DutiesController : ControllerBase
     public async Task<ActionResult<DutyDto>> CreateManual([FromBody] CreateDutyDto dto)
     {
         var duty = await _dutyService.CreateManualAsync(dto);
+
+        // Grup ilk açıldığında otomasyon, admin ilk nöbeti kendisi atayana
+        // kadar beklemede kalır — bu ilk manuel atamayla tetiklenir.
+        try
+        {
+            var groupId = _currentGroupContext.RequireGroupId();
+            await _autoScheduleService.EnsureInitialScheduleAsync(groupId);
+        }
+        catch
+        {
+            // Otomatik planlama başarısız olsa bile manuel atama geçerli kalsın.
+        }
+
         return CreatedAtAction(nameof(GetById), new { id = duty.Id }, duty);
     }
 

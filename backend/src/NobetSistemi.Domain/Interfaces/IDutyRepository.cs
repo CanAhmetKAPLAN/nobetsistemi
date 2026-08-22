@@ -14,4 +14,5 @@ public interface IDutyRepository : IRepository<Duty>
     Task<int> GetWeekendDutyCountAsync(Guid userId, DateTime monthStart, DateTime monthEnd);
     Task<IEnumerable<Duty>> GetAllDutiesOnDateIgnoringGroupAsync(DateTime date);
     Task<DateTime?> GetLastDutyDateBeforeAsync(Guid userId, DateTime beforeDate);
+    Task<bool> HasAnyDutyAsync();
 }

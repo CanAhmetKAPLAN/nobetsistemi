@@ -9,22 +9,29 @@ namespace NobetSistemi.Application.Services;
 /// Grupların nöbet takvimini otomatik olarak "önümüzdeki 2 ay" penceresinde
 /// tutar: en az <see cref="MinMembersForAutoSchedule"/> aktif üyesi olan
 /// gruplarda, üye katıldığında mevcut planı günceller; arka plan servisi de
-/// zaman ilerledikçe pencereyi öne kaydırır (yeni ayı doldurur).
+/// zaman ilerledikçe pencereyi öne kaydırır (yeni ayı doldurur). Grupta HİÇ
+/// nöbet kaydı yoksa (yepyeni grup) otomasyon devreye girmez — admin ilk
+/// nöbeti kendisi atayana kadar bekler, o ilk atama (manuel ya da tek günlük
+/// otomatik) yapılınca sistem devamını otomatik doldurmaya başlar. Zaten
+/// çalışan (önceden nöbeti oluşmuş) gruplar bu bekleme kuralından etkilenmez.
 /// </summary>
 public class AutoScheduleService : IAutoScheduleService
 {
     private const int MinMembersForAutoSchedule = 3;
 
     private readonly IGroupMembershipRepository _membershipRepository;
+    private readonly IDutyRepository _dutyRepository;
     private readonly IDutyService _dutyService;
     private readonly ICurrentGroupContext _currentGroupContext;
 
     public AutoScheduleService(
         IGroupMembershipRepository membershipRepository,
+        IDutyRepository dutyRepository,
         IDutyService dutyService,
         ICurrentGroupContext currentGroupContext)
     {
         _membershipRepository = membershipRepository;
+        _dutyRepository = dutyRepository;
         _dutyService = dutyService;
         _currentGroupContext = currentGroupContext;
     }
@@ -45,6 +52,10 @@ public class AutoScheduleService : IAutoScheduleService
         if (!await HasEnoughMembersAsync(groupId)) return;
 
         _currentGroupContext.SetGroup(groupId, GroupRole.Admin);
+
+        // Grup hâlâ yepyeniyse (hiç nöbet kaydı yoksa) admin ilk nöbeti kendisi
+        // atamadan otomasyon başlamaz.
+        if (!await _dutyRepository.HasAnyDutyAsync()) return;
 
         var today = DateTime.UtcNow.Date;
         var from = today.AddDays(freezeDays);

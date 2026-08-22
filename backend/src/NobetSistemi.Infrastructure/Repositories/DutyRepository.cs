@@ -93,4 +93,7 @@ public class DutyRepository : BaseRepository<Duty>, IDutyRepository
             .OrderByDescending(d => d.Date)
             .Select(d => (DateTime?)d.Date)
             .FirstOrDefaultAsync();
+
+    public async Task<bool> HasAnyDutyAsync() =>
+        await _dbSet.AnyAsync();
 }
