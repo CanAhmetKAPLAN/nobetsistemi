@@ -33,6 +33,8 @@ Future<void> _handleMessage(RemoteMessage message) async {
 String? _routeFor(String type) => switch (type) {
       'swap_request' || 'swap_approved' || 'swap_rejected' => '/swaps',
       'leave_approved' || 'leave_rejected' => '/leaves',
+      'duty_reminder' || 'duty_today' || 'duty_assigned' || 'duty_reassigned' =>
+        '/monthly-calendar',
       _ => null,
     };
 

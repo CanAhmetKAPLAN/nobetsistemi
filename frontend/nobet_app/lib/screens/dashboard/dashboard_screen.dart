@@ -10,6 +10,15 @@ import '../../providers/group_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../widgets/app_drawer.dart';
 
+/// Bildirim başlığına göre uygulama içinde açılacak sayfa — "Gelişmeler"
+/// akışında ve bildirim listesinde ortak kullanılır.
+String? routeForNotificationTitle(String title) {
+  if (title.contains('Değişim')) return '/swaps';
+  if (title.contains('Nöbet Atandı')) return '/monthly-calendar';
+  if (title.contains('İzin')) return '/leaves';
+  return null;
+}
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -825,7 +834,16 @@ class _FeedItem extends StatelessWidget {
 
     return Column(
       children: [
-        Padding(
+        InkWell(
+          onTap: () {
+            final auth = context.read<AuthProvider>();
+            if (!notif.isRead) {
+              context.read<NotificationProvider>().markAsRead(auth.token!, notif.id);
+            }
+            final route = routeForNotificationTitle(notif.title);
+            if (route != null) Navigator.pushNamed(context, route);
+          },
+          child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -877,6 +895,7 @@ class _FeedItem extends StatelessWidget {
                 ),
               ),
             ],
+          ),
           ),
         ),
         if (!isLast)
