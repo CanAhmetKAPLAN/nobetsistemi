@@ -181,7 +181,7 @@ public class LeaveService : ILeaveService
                 }
 
                 // Yeni kullanıcının puanını artır
-                newMembership.Score += weight;
+                newMembership.Score = Math.Round(newMembership.Score + weight, 4);
                 _membershipRepository.Update(newMembership);
 
                 // Nöbeti devret

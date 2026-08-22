@@ -171,7 +171,7 @@ public class DutyService : IDutyService
             {
                 var selected = await _assignment.SelectMemberForDateAsync(date);
                 double weight = _assignment.GetDayWeight(date);
-                selected.Score += weight;
+                selected.Score = Math.Round(selected.Score + weight, 4);
                 _membershipRepository.Update(selected);
 
                 if (existing is not null && existing.UserId == selected.UserId)
@@ -256,7 +256,7 @@ public class DutyService : IDutyService
 
         await _dutyRepository.AddAsync(duty);
 
-        membership.Score += dayWeight;
+        membership.Score = Math.Round(membership.Score + dayWeight, 4);
         _membershipRepository.Update(membership);
         await _dutyRepository.SaveChangesAsync();
 
@@ -300,7 +300,7 @@ public class DutyService : IDutyService
 
         await _dutyRepository.AddAsync(duty);
 
-        selected.Score += dayWeight;
+        selected.Score = Math.Round(selected.Score + dayWeight, 4);
         _membershipRepository.Update(selected);
         await _dutyRepository.SaveChangesAsync();
 

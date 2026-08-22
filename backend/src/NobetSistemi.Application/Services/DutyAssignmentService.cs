@@ -123,8 +123,13 @@ public class DutyAssignmentService : IDutyAssignmentService
         // (puanlar/üyeler değişmeden) yeniden çalıştırıldığında hep aynı
         // sonuç çıkar — günlük otomatik yeniden dengeleme, gerçekte hiçbir
         // şey değişmediğinde nöbetleri gereksiz yere karıştırmaz.
+        // Kayan noktalı toplama/çıkarmalardan doğan mikroskobik farklar
+        // "eşit" puanları eşit olarak tanımayı engellemesin diye epsilon
+        // toleranslı karşılaştırma kullanılır.
+        const double scoreEpsilon = 0.0001;
         double minScore = scored.Min(x => x.EffectiveScore);
-        var candidates  = scored.Where(x => x.EffectiveScore == minScore).Select(x => x.Member).ToList();
+        var candidates  = scored.Where(x => Math.Abs(x.EffectiveScore - minScore) < scoreEpsilon)
+            .Select(x => x.Member).ToList();
 
         if (candidates.Count == 1) return candidates[0];
 
