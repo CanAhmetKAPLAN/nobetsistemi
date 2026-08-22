@@ -54,7 +54,7 @@ Bu proje, adil nöbet dağıtımı yapan mobil uyumlu bir sistemdir.
 
 ---
 
-## 🚀 Çalıştırma
+##  Çalıştırma
 
 ### Backend
 ```bash
