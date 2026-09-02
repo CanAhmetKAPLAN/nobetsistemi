@@ -60,10 +60,18 @@ class FcmService {
   static final _messaging = FirebaseMessaging.instance;
   static const _tokenKey = 'fcm_token';
 
+  /// Bildirim kaydı başarısız olsa bile (ör. iOS Safari'de web push
+  /// desteklenmiyorsa — sadece "Ana Ekrana Ekle" ile yüklenmiş PWA'larda
+  /// çalışır) bu, giriş/kayıt akışını asla kesmemeli — sadece bildirimler
+  /// çalışmaz, hesaba giriş etkilenmez.
   static Future<void> init({String? authToken}) async {
-    await _requestPermission();
-    await _setupHandlers();
-    await _registerToken(authToken: authToken);
+    try {
+      await _requestPermission();
+      await _setupHandlers();
+      await _registerToken(authToken: authToken);
+    } catch (e) {
+      if (kDebugMode) debugPrint('FCM başlatılamadı (bildirimler devre dışı): $e');
+    }
   }
 
   static Future<void> _requestPermission() async {
