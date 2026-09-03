@@ -13,6 +13,7 @@ import 'providers/group_provider.dart';
 import 'providers/leave_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/swap_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/admin/admin_panel_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
@@ -54,6 +55,7 @@ class NobetApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SwapProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => GroupProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
