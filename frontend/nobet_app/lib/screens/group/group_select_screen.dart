@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../models/group.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/group_provider.dart';
+import '../../providers/theme_provider.dart';
 
 class GroupSelectScreen extends StatefulWidget {
   const GroupSelectScreen({super.key});
@@ -41,6 +42,7 @@ class _GroupSelectScreenState extends State<GroupSelectScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final groups = context.watch<GroupProvider>().myGroups;
 
     return Scaffold(
@@ -103,6 +105,7 @@ class _GroupTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
@@ -147,11 +150,12 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 48),
       child: Column(
         children: [
-          const Icon(Icons.groups_outlined, size: 72, color: AppTheme.textSecondary),
+          Icon(Icons.groups_outlined, size: 72, color: AppTheme.textSecondary),
           const SizedBox(height: 16),
           Text(
             'Henüz bir nöbet grubunuz yok',
@@ -162,7 +166,7 @@ class _EmptyState extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Yeni bir grup oluşturun ya da bir katılım kodu ile mevcut bir gruba katılın.',
             style: TextStyle(color: AppTheme.textSecondary),
             textAlign: TextAlign.center,

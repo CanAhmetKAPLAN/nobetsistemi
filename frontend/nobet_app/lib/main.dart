@@ -57,32 +57,42 @@ class NobetApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => GroupProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: MaterialApp(
-        navigatorKey: navigatorKey,
-        title: 'Nöbet Sistemi',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.dark,
-        darkTheme: AppTheme.dark,
-        themeMode: ThemeMode.dark,
-        initialRoute: '/',
-        routes: {
-          '/': (ctx) => const _SplashRouter(),
-          '/login': (ctx) => const LoginScreen(),
-          '/register': (ctx) => const RegisterScreen(),
-          '/dashboard': (ctx) => const DashboardScreen(),
-          '/duties': (ctx) => const DutyListScreen(),
-          '/monthly-calendar': (ctx) => const MonthlyCalendarScreen(),
-          '/leaderboard': (ctx) => const LeaderboardScreen(),
-          '/score-history': (ctx) => const ScoreHistoryScreen(),
-          '/leaves': (ctx) => const LeaveRequestScreen(),
-          '/swaps': (ctx) => const SwapRequestScreen(),
-          '/notifications': (ctx) => const NotificationsScreen(),
-          '/admin': (ctx) => const _AdminGuard(),
-          '/group-select': (ctx) => const GroupSelectScreen(),
-          '/create-group': (ctx) => const CreateGroupScreen(),
-          '/join-group': (ctx) => const JoinGroupScreen(),
-        },
-      ),
+      child: const _ThemedMaterialApp(),
+    );
+  }
+}
+
+/// [ThemeProvider]'ı dinleyip [AppTheme] rengi değiştiğinde `MaterialApp`'ı
+/// (ve dolayısıyla tüm ekranları) yeniden çizen sarmalayıcı.
+class _ThemedMaterialApp extends StatelessWidget {
+  const _ThemedMaterialApp();
+
+  @override
+  Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
+    return MaterialApp(
+      navigatorKey: navigatorKey,
+      title: 'Nöbet Sistemi',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.themeData,
+      initialRoute: '/',
+      routes: {
+        '/': (ctx) => const _SplashRouter(),
+        '/login': (ctx) => const LoginScreen(),
+        '/register': (ctx) => const RegisterScreen(),
+        '/dashboard': (ctx) => const DashboardScreen(),
+        '/duties': (ctx) => const DutyListScreen(),
+        '/monthly-calendar': (ctx) => const MonthlyCalendarScreen(),
+        '/leaderboard': (ctx) => const LeaderboardScreen(),
+        '/score-history': (ctx) => const ScoreHistoryScreen(),
+        '/leaves': (ctx) => const LeaveRequestScreen(),
+        '/swaps': (ctx) => const SwapRequestScreen(),
+        '/notifications': (ctx) => const NotificationsScreen(),
+        '/admin': (ctx) => const _AdminGuard(),
+        '/group-select': (ctx) => const GroupSelectScreen(),
+        '/create-group': (ctx) => const CreateGroupScreen(),
+        '/join-group': (ctx) => const JoinGroupScreen(),
+      },
     );
   }
 }
@@ -120,9 +130,10 @@ class _SplashRouterState extends State<_SplashRouter> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    context.watch<ThemeProvider>();
+    return Scaffold(
       backgroundColor: AppTheme.primary,
-      body: Center(
+      body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

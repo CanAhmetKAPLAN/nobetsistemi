@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../core/theme/app_theme.dart';
+import '../providers/theme_provider.dart';
 
 class LoadingOverlay extends StatelessWidget {
   final Widget child;
@@ -8,13 +10,14 @@ class LoadingOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return Stack(
       children: [
         child,
         if (isLoading)
-          const Positioned.fill(
+          Positioned.fill(
             child: ColoredBox(
-              color: Color(0x55000000),
+              color: const Color(0x55000000),
               child: Center(
                 child: CircularProgressIndicator(color: AppTheme.primary),
               ),

@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/date_utils.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../widgets/app_drawer.dart';
 import '../dashboard/dashboard_screen.dart' show routeForNotificationTitle;
 
@@ -27,6 +28,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final provider = context.watch<NotificationProvider>();
     final token = context.read<AuthProvider>().token!;
 
@@ -95,7 +97,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       ),
                       trailing: !n.isRead
                           ? IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.mark_email_read,
                                 color: AppTheme.primary,
                                 size: 20,

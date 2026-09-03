@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/date_utils.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/leave_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../widgets/app_drawer.dart';
 import '../../widgets/status_badge.dart';
 
@@ -49,7 +50,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: AppTheme.primary.withValues(alpha: 0.4)),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
                       Icon(Icons.check_circle_outline, color: AppTheme.primaryLight, size: 16),
                       SizedBox(width: 8),
@@ -65,7 +66,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                 // Start date
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.calendar_today, color: AppTheme.primary),
+                  leading: Icon(Icons.calendar_today, color: AppTheme.primary),
                   title: Text(
                     startDate == null
                         ? 'Başlangıç tarihi seç'
@@ -84,7 +85,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                 // End date
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.calendar_today, color: AppTheme.primaryLight),
+                  leading: Icon(Icons.calendar_today, color: AppTheme.primaryLight),
                   title: Text(
                     endDate == null
                         ? 'Bitiş tarihi seç'
@@ -137,8 +138,8 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                       );
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('✅ İzin onaylandı, nöbet listesi güncellendi.'),
+                      SnackBar(
+                        content: const Text('✅ İzin onaylandı, nöbet listesi güncellendi.'),
                         backgroundColor: AppTheme.success,
                       ),
                     );
@@ -161,6 +162,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final provider = context.watch<LeaveProvider>();
 
     return Scaffold(
@@ -176,12 +178,12 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         child: provider.loading
             ? const Center(child: CircularProgressIndicator())
             : provider.leaves.isEmpty
-                ? const Center(
+                ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.beach_access_outlined, size: 64, color: AppTheme.textSecondary),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         Text('Henüz izin yok',
                             style: TextStyle(color: AppTheme.textSecondary, fontSize: 16)),
                       ],
@@ -197,7 +199,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                         child: ListTile(
                           leading: CircleAvatar(
                             backgroundColor: AppTheme.success.withValues(alpha: 0.2),
-                            child: const Icon(Icons.beach_access, color: AppTheme.success, size: 20),
+                            child: Icon(Icons.beach_access, color: AppTheme.success, size: 20),
                           ),
                           title: Text(
                             '${AppDateUtils.formatDate(leave.startDate)} – ${AppDateUtils.formatDate(leave.endDate)}',
@@ -205,7 +207,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                           ),
                           subtitle: leave.reason.isNotEmpty
                               ? Text(leave.reason, maxLines: 2, overflow: TextOverflow.ellipsis)
-                              : const Text('Gerekçe belirtilmedi',
+                              : Text('Gerekçe belirtilmedi',
                                   style: TextStyle(fontStyle: FontStyle.italic,
                                       color: AppTheme.textSecondary)),
                           trailing: StatusBadge(leave.status),

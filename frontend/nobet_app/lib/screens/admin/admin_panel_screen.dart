@@ -7,6 +7,7 @@ import '../../providers/duty_provider.dart';
 import '../../providers/group_provider.dart';
 import '../../providers/leave_provider.dart';
 import '../../providers/swap_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../widgets/app_drawer.dart';
 import '../../widgets/status_badge.dart';
 
@@ -48,6 +49,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin Panel'),
@@ -88,7 +90,7 @@ class _DutyTab extends StatelessWidget {
           title: const Text('Otomatik Nöbet Ata'),
           content: ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.calendar_today, color: AppTheme.primary),
+            leading: Icon(Icons.calendar_today, color: AppTheme.primary),
             title: Text(date == null
                 ? 'Tarih seç'
                 : AppDateUtils.formatDate(date!.toIso8601String())),
@@ -112,8 +114,8 @@ class _DutyTab extends StatelessWidget {
                 try {
                   await context.read<DutyProvider>().autoAssign(token, date!);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Nöbet otomatik atandı'),
+                    SnackBar(
+                        content: const Text('Nöbet otomatik atandı'),
                         backgroundColor: AppTheme.success),
                   );
                 } catch (e) {
@@ -142,7 +144,7 @@ class _DutyTab extends StatelessWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 'Seçilen aralıktaki otomatik atanmış nöbetler, güncel üye '
                 'listesiyle yeniden dağıtılır (yeni katılanlar dahil edilir). '
                 'Manuel atamalar ve geçmiş tarihler değişmez.',
@@ -151,7 +153,7 @@ class _DutyTab extends StatelessWidget {
               const SizedBox(height: 16),
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.calendar_today, color: AppTheme.primary),
+                leading: Icon(Icons.calendar_today, color: AppTheme.primary),
                 title: Text(fromDate == null
                     ? 'Başlangıç tarihi'
                     : AppDateUtils.formatDate(fromDate!.toIso8601String())),
@@ -167,7 +169,7 @@ class _DutyTab extends StatelessWidget {
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.event, color: AppTheme.primary),
+                leading: Icon(Icons.event, color: AppTheme.primary),
                 title: Text(toDate == null
                     ? 'Bitiş tarihi'
                     : AppDateUtils.formatDate(toDate!.toIso8601String())),
@@ -222,6 +224,7 @@ class _DutyTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final duties = context.watch<DutyProvider>().duties;
     return Column(
       children: [
@@ -256,11 +259,11 @@ class _DutyTab extends StatelessWidget {
               return Card(
                 margin: const EdgeInsets.only(bottom: 6),
                 child: ListTile(
-                  leading: const Icon(Icons.calendar_month, color: AppTheme.primary),
+                  leading: Icon(Icons.calendar_month, color: AppTheme.primary),
                   title: Text(AppDateUtils.formatDate(d.date)),
                   subtitle: Text(d.userName),
                   trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: AppTheme.error, size: 20),
+                    icon: Icon(Icons.delete, color: AppTheme.error, size: 20),
                     onPressed: () async {
                       final token = context.read<AuthProvider>().token!;
                       await context.read<DutyProvider>().delete(token, d.id);
@@ -279,6 +282,7 @@ class _DutyTab extends StatelessWidget {
 class _LeaveTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final pending = context.watch<LeaveProvider>().pending;
     final token = context.read<AuthProvider>().token!;
 
@@ -312,11 +316,11 @@ class _LeaveTab extends StatelessWidget {
                         await context.read<LeaveProvider>().review(token, leave.id, false);
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Red edildi'), backgroundColor: AppTheme.error),
+                          SnackBar(content: const Text('Red edildi'), backgroundColor: AppTheme.error),
                         );
                       },
-                      icon: const Icon(Icons.close, color: AppTheme.error),
-                      label: const Text('Reddet', style: TextStyle(color: AppTheme.error)),
+                      icon: Icon(Icons.close, color: AppTheme.error),
+                      label: Text('Reddet', style: TextStyle(color: AppTheme.error)),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton.icon(
@@ -324,7 +328,7 @@ class _LeaveTab extends StatelessWidget {
                         await context.read<LeaveProvider>().review(token, leave.id, true);
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Onaylandı'), backgroundColor: AppTheme.success),
+                          SnackBar(content: const Text('Onaylandı'), backgroundColor: AppTheme.success),
                         );
                       },
                       icon: const Icon(Icons.check),
@@ -345,6 +349,7 @@ class _LeaveTab extends StatelessWidget {
 class _SwapTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final pending = context.watch<SwapProvider>().pending;
     final token = context.read<AuthProvider>().token!;
 
@@ -375,8 +380,8 @@ class _SwapTab extends StatelessWidget {
                       onPressed: () async {
                         await context.read<SwapProvider>().review(token, swap.id, false);
                       },
-                      icon: const Icon(Icons.close, color: AppTheme.error),
-                      label: const Text('Reddet', style: TextStyle(color: AppTheme.error)),
+                      icon: Icon(Icons.close, color: AppTheme.error),
+                      label: Text('Reddet', style: TextStyle(color: AppTheme.error)),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton.icon(
@@ -490,8 +495,8 @@ class _UserTab extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => _cast(context, token, groupId, vote.id, false),
-                        icon: const Icon(Icons.close, color: AppTheme.error),
-                        label: const Text('Hayır', style: TextStyle(color: AppTheme.error)),
+                        icon: Icon(Icons.close, color: AppTheme.error),
+                        label: Text('Hayır', style: TextStyle(color: AppTheme.error)),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -507,7 +512,7 @@ class _UserTab extends StatelessWidget {
                     Expanded(
                       child: Text(
                         vote.myVote == true ? 'Oyunuz: Evet' : 'Oyunuz: Hayır',
-                        style: const TextStyle(color: AppTheme.textSecondary),
+                        style: TextStyle(color: AppTheme.textSecondary),
                       ),
                     ),
                   if (canCancel)
@@ -572,7 +577,7 @@ class _UserTab extends StatelessWidget {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('İptal')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Çıkar', style: TextStyle(color: AppTheme.error)),
+            child: Text('Çıkar', style: TextStyle(color: AppTheme.error)),
           ),
         ],
       ),
@@ -584,6 +589,7 @@ class _UserTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final members = context.watch<GroupProvider>().members;
     final groupId = context.watch<GroupProvider>().currentGroup?.id ?? '';
     final token = context.read<AuthProvider>().token!;
@@ -620,7 +626,7 @@ class _UserTab extends StatelessWidget {
                 StatusBadge(member.isActive ? 'Approved' : 'Rejected'),
                 if (!member.isAdmin && member.isActive)
                   IconButton(
-                    icon: const Icon(Icons.how_to_vote, size: 20, color: AppTheme.textSecondary),
+                    icon: Icon(Icons.how_to_vote, size: 20, color: AppTheme.textSecondary),
                     tooltip: 'Admin olması için oylama başlat',
                     onPressed: hasActiveVote
                         ? null
@@ -642,7 +648,7 @@ class _UserTab extends StatelessWidget {
                       _toggleActive(context, token, groupId, member.userId, member.isActive),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.person_remove, color: AppTheme.error, size: 20),
+                  icon: Icon(Icons.person_remove, color: AppTheme.error, size: 20),
                   tooltip: 'Gruptan Çıkar',
                   onPressed: () =>
                       _confirmRemove(context, token, groupId, member.userId, member.userName),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../core/theme/app_theme.dart';
+import '../providers/theme_provider.dart';
 
 class StatusBadge extends StatelessWidget {
   final String status;
@@ -7,6 +9,7 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final (color, label) = switch (status) {
       'Approved' => (AppTheme.success, 'Onaylandı'),
       'Rejected' => (AppTheme.error, 'Reddedildi'),

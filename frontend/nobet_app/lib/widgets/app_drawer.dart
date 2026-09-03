@@ -4,12 +4,14 @@ import '../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/group_provider.dart';
 import '../providers/notification_provider.dart';
+import '../providers/theme_provider.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final auth = context.watch<AuthProvider>();
     final notif = context.watch<NotificationProvider>();
     final groupProvider = context.watch<GroupProvider>();
@@ -21,14 +23,14 @@ class AppDrawer extends StatelessWidget {
       child: Column(
         children: [
           UserAccountsDrawerHeader(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppTheme.panelLight,
               border: Border(bottom: BorderSide(color: AppTheme.border)),
             ),
             accountName: Text(user?.name ?? '',
-              style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
+              style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
             accountEmail: Text(user?.email ?? '',
-              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
             currentAccountPicture: CircleAvatar(
               backgroundColor: AppTheme.primary,
               child: Text(
@@ -79,8 +81,8 @@ class AppDrawer extends StatelessWidget {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.logout, color: AppTheme.error),
-            title: const Text('Çıkış Yap', style: TextStyle(color: AppTheme.error)),
+            leading: Icon(Icons.logout, color: AppTheme.error),
+            title: Text('Çıkış Yap', style: TextStyle(color: AppTheme.error)),
             onTap: () async {
               await auth.logout();
               if (context.mounted) context.read<GroupProvider>().clearGroup();

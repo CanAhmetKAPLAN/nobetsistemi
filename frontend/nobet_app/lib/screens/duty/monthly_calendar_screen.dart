@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/duty_provider.dart';
 import '../../providers/group_provider.dart';
 import '../../providers/swap_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../models/duty.dart';
 
 class MonthlyCalendarScreen extends StatefulWidget {
@@ -144,12 +145,12 @@ class _MonthlyCalendarScreenState extends State<MonthlyCalendarScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.swap_horiz, color: AppTheme.primaryLight, size: 18),
+                      Icon(Icons.swap_horiz, color: AppTheme.primaryLight, size: 18),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           '${AppDateUtils.formatDate(targetDuty.date)} tarihli nöbet — ${targetDuty.userName}',
-                          style: const TextStyle(fontSize: 13, color: AppTheme.primaryLight),
+                          style: TextStyle(fontSize: 13, color: AppTheme.primaryLight),
                         ),
                       ),
                     ],
@@ -160,7 +161,7 @@ class _MonthlyCalendarScreenState extends State<MonthlyCalendarScreen> {
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 6),
                 if (offerableDuties.isEmpty)
-                  const Text(
+                  Text(
                     'Teklif edebileceğiniz yaklaşan nöbetiniz yok.',
                     style: TextStyle(color: AppTheme.error, fontSize: 12),
                   )
@@ -244,6 +245,7 @@ class _MonthlyCalendarScreenState extends State<MonthlyCalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final auth    = context.watch<AuthProvider>();
     final isAdmin = context.watch<GroupProvider>().currentGroup?.isAdmin ?? false;
     final userId  = auth.user?.id ?? '';
@@ -316,6 +318,7 @@ class _MonthNavigator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return Container(
       color: AppTheme.primary,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
@@ -349,6 +352,7 @@ class _WeekdayHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     const days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
     return Container(
       color: AppTheme.primary.withValues(alpha: 0.1),
@@ -459,6 +463,7 @@ class _DayCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     Color bg;
     Color borderColor;
 
@@ -530,7 +535,7 @@ class _DayCell extends StatelessWidget {
               ),
               if (canSwap) ...[
                 const SizedBox(height: 2),
-                const Icon(Icons.swap_horiz, size: 10, color: AppTheme.accent),
+                Icon(Icons.swap_horiz, size: 10, color: AppTheme.accent),
               ],
             ],
           ],

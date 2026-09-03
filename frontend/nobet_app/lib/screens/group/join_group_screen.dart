@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/group_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../services/api_service.dart';
 
 class JoinGroupScreen extends StatefulWidget {
@@ -46,6 +47,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(title: const Text('Gruba Katıl')),
@@ -63,7 +65,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Icon(Icons.group_add, size: 56, color: AppTheme.primary),
+                        Icon(Icons.group_add, size: 56, color: AppTheme.primary),
                         const SizedBox(height: 12),
                         Text(
                           'Mevcut Bir Gruba Katıl',

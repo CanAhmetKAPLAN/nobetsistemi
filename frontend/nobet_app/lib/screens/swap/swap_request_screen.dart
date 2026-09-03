@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/duty_provider.dart';
 import '../../providers/group_provider.dart';
 import '../../providers/swap_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../widgets/app_drawer.dart';
 import '../../widgets/status_badge.dart';
 
@@ -144,8 +145,8 @@ class _SwapRequestScreenState extends State<SwapRequestScreen>
                       );
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Değişim talebi gönderildi'),
+                      SnackBar(
+                          content: const Text('Değişim talebi gönderildi'),
                           backgroundColor: AppTheme.success),
                     );
                   }
@@ -177,9 +178,9 @@ class _SwapRequestScreenState extends State<SwapRequestScreen>
         return Card(
           margin: const EdgeInsets.only(bottom: 8),
           child: ListTile(
-            leading: const CircleAvatar(
+            leading: CircleAvatar(
               backgroundColor: AppTheme.warning,
-              child: Icon(Icons.swap_horiz, color: Colors.white, size: 20),
+              child: const Icon(Icons.swap_horiz, color: Colors.white, size: 20),
             ),
             title: Text(
               '${AppDateUtils.formatDate(swap.requesterDutyDate)} → ${swap.targetUserName}',
@@ -197,7 +198,7 @@ class _SwapRequestScreenState extends State<SwapRequestScreen>
                 if (swap.status == 'Pending') ...[
                   const SizedBox(width: 4),
                   IconButton(
-                    icon: const Icon(Icons.cancel, color: AppTheme.error, size: 20),
+                    icon: Icon(Icons.cancel, color: AppTheme.error, size: 20),
                     onPressed: () async {
                       await context.read<SwapProvider>().cancel(
                             context.read<AuthProvider>().token!,
@@ -232,9 +233,9 @@ class _SwapRequestScreenState extends State<SwapRequestScreen>
               children: [
                 Row(
                   children: [
-                    const CircleAvatar(
+                    CircleAvatar(
                       backgroundColor: AppTheme.warning,
-                      child: Icon(Icons.swap_horiz, color: Colors.white, size: 20),
+                      child: const Icon(Icons.swap_horiz, color: Colors.white, size: 20),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -248,7 +249,7 @@ class _SwapRequestScreenState extends State<SwapRequestScreen>
                 ),
                 if (swap.reason.isNotEmpty) ...[
                   const SizedBox(height: 6),
-                  Text(swap.reason, style: const TextStyle(color: AppTheme.textSecondary)),
+                  Text(swap.reason, style: TextStyle(color: AppTheme.textSecondary)),
                 ],
                 if (swap.status == 'Pending') ...[
                   const SizedBox(height: 8),
@@ -257,8 +258,8 @@ class _SwapRequestScreenState extends State<SwapRequestScreen>
                     children: [
                       TextButton.icon(
                         onPressed: () => _respond(swap.id, false),
-                        icon: const Icon(Icons.close, color: AppTheme.error),
-                        label: const Text('Reddet', style: TextStyle(color: AppTheme.error)),
+                        icon: Icon(Icons.close, color: AppTheme.error),
+                        label: Text('Reddet', style: TextStyle(color: AppTheme.error)),
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton.icon(
@@ -280,6 +281,7 @@ class _SwapRequestScreenState extends State<SwapRequestScreen>
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final provider = context.watch<SwapProvider>();
 
     return Scaffold(

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/group_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../widgets/app_drawer.dart';
 
 class LeaderboardScreen extends StatefulWidget {
@@ -28,6 +29,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final provider = context.watch<GroupProvider>();
     final currentUserId = context.read<AuthProvider>().user?.id;
 

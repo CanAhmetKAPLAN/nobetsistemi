@@ -5,6 +5,7 @@ import '../../core/utils/date_utils.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/duty_provider.dart';
 import '../../providers/group_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../widgets/app_drawer.dart';
 
 class DutyListScreen extends StatefulWidget {
@@ -36,6 +37,7 @@ class _DutyListScreenState extends State<DutyListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     final provider = context.watch<DutyProvider>();
     final isAdmin = context.watch<GroupProvider>().currentGroup?.isAdmin ?? false;
 
@@ -158,7 +160,7 @@ class _DutyListScreenState extends State<DutyListScreen> {
                           if (isAdmin) ...[
                             const SizedBox(width: 4),
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.delete,
                                 color: AppTheme.error,
                                 size: 20,
@@ -189,7 +191,7 @@ class _DutyListScreenState extends State<DutyListScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Sil', style: TextStyle(color: AppTheme.error)),
+            child: Text('Sil', style: TextStyle(color: AppTheme.error)),
           ),
         ],
       ),

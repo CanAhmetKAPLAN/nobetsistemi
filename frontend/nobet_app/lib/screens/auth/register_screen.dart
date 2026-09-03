@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/group_routing.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/theme_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -50,6 +51,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: SafeArea(
@@ -60,7 +62,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
                 children: [
-                  const Icon(Icons.local_hospital, size: 72, color: AppTheme.primary),
+                  Icon(Icons.local_hospital, size: 72, color: AppTheme.primary),
                   const SizedBox(height: 16),
                   Text('Kayıt Ol',
                       style: Theme.of(context)

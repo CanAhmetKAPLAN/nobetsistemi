@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../models/monthly_score.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/duty_provider.dart';
+import '../../providers/theme_provider.dart';
 
 class ScoreHistoryScreen extends StatefulWidget {
   const ScoreHistoryScreen({super.key});
@@ -56,6 +57,7 @@ class _ScoreHistoryScreenState extends State<ScoreHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Geçmiş Puan Tablosu'),
@@ -131,12 +133,13 @@ class _FilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return Container(
       padding: const EdgeInsets.all(12),
       color: AppTheme.primary.withValues(alpha: 0.06),
       child: Row(
         children: [
-          const Icon(Icons.calendar_today, size: 18, color: AppTheme.primary),
+          Icon(Icons.calendar_today, size: 18, color: AppTheme.primary),
           const SizedBox(width: 8),
           Expanded(
             child: DropdownButtonHideUnderline(
@@ -186,6 +189,7 @@ class _ScoreRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<ThemeProvider>();
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
