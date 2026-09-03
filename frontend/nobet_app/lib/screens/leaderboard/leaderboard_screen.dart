@@ -111,7 +111,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            '${member.score}',
+                            _fmtScore(member.score),
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
@@ -134,3 +134,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     );
   }
 }
+
+String _fmtScore(double score) =>
+    score == score.truncateToDouble() ? score.toInt().toString() : score.toStringAsFixed(2);

@@ -19,14 +19,22 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A new Flutter project.">
+  <!-- viewport-fit=cover: Flutter içeriğinin çentik/durum çubuğu alanının
+       altına kadar uzanmasını sağlar (black-translucent durum çubuğu ile
+       birlikte kullanılır). -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 
-  <!-- Tarayıcı arayüzünü (durum çubuğu / sekme rengi) uygulamanın koyu temasıyla eşleştirir -->
+  <!-- Tarayıcı arayüzü rengi; uygulama içi Açık/Koyu mod geçişini Flutter tarafı
+       (SystemChrome) çalışma zamanında günceller. -->
   <meta name="theme-color" content="#121212">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <!-- "black-translucent": durum çubuğu şeffaf olur ve altındaki Flutter
+       içeriğinin (AppTheme'in o an ki rengi) görünmesini sağlar — böylece
+       Açık modda beyaz, Koyu modda siyah olarak uygulama temasını izler. -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="nobet_app">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
@@ -37,7 +45,7 @@
   <link rel="manifest" href="manifest.json">
 
   <style>
-    html, body { background-color: #121212; }
+    html, body { background-color: #121212; height: 100%; }
   </style>
 </head>
 <body>

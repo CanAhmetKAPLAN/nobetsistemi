@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Uygulama genelinde kullanılan renk paleti.
 ///
@@ -76,6 +77,20 @@ class AppTheme {
     warning       = dark ? _darkWarning       : _lightWarning;
     success       = dark ? _darkSuccess       : _lightSuccess;
     secondary     = dark ? _darkSecondary     : _lightSecondary;
+
+    // Tarayıcı/OS arayüzünü (durum çubuğu, sekme rengi) senkronize eder.
+    // iOS PWA'da durum çubuğu "black-translucent" olduğundan asıl rengi
+    // Flutter'ın en üstte çizdiği içerik belirler; bu çağrı Android/masaüstü
+    // tarayıcılarda adres/sekme rengini ve simge parlaklığını günceller.
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: bg,
+        statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+        statusBarBrightness: dark ? Brightness.dark : Brightness.light,
+        systemNavigationBarColor: bg,
+        systemNavigationBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+      ),
+    );
   }
 
   // ── ThemeData — güncel renklerden anlık üretilir ────────────────────────────
