@@ -334,7 +334,7 @@ class _MonthlyCalendarScreenState extends State<MonthlyCalendarScreen> {
                       width: 20, height: 20,
                       child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                     )
-                  : const Icon(Icons.delete_sweep_outlined),
+                  : const Icon(Icons.delete),
               tooltip: 'Ayı Sil',
               onPressed: _filling || _deletingMonth ? null : _deleteMonth,
             ),
