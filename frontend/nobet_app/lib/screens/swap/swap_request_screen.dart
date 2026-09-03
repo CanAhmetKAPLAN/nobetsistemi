@@ -289,9 +289,9 @@ class _SwapRequestScreenState extends State<SwapRequestScreen>
         title: const Text('Nöbet Değişim Talepleri'),
         bottom: TabBar(
           controller: _tabCtrl,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white60,
+          indicatorColor: AppTheme.primary,
+          labelColor: AppTheme.textPrimary,
+          unselectedLabelColor: AppTheme.textSecondary,
           tabs: const [
             Tab(text: 'Gönderdiklerim'),
             Tab(text: 'Gelen Talepler'),

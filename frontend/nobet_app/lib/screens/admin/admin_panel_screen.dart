@@ -55,9 +55,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         title: const Text('Admin Panel'),
         bottom: TabBar(
           controller: _tabCtrl,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white60,
+          indicatorColor: AppTheme.primary,
+          labelColor: AppTheme.textPrimary,
+          unselectedLabelColor: AppTheme.textSecondary,
           tabs: const [
             Tab(icon: Icon(Icons.calendar_month), text: 'Nöbet'),
             Tab(icon: Icon(Icons.beach_access), text: 'İzin'),

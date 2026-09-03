@@ -20,6 +20,7 @@ class _MonthlyCalendarScreenState extends State<MonthlyCalendarScreen> {
   late int _year;
   late int _month;
   bool _filling = false;
+  bool _deletingMonth = false;
 
   static const _monthNames = [
     '', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
@@ -107,6 +108,66 @@ class _MonthlyCalendarScreenState extends State<MonthlyCalendarScreen> {
     } finally {
       if (mounted) setState(() => _filling = false);
     }
+  }
+
+  Future<void> _deleteMonth() async {
+    final duties = context.read<DutyProvider>().monthlyDuties;
+    if (duties.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bu ayda silinecek nöbet yok.')),
+      );
+      return;
+    }
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Ayı Sil'),
+        content: Text(
+          '$_year ${_monthNames[_month]} ayındaki ${duties.length} nöbetin tamamı '
+          'silinecek ve ilgili kişilerin puanları buna göre düşülecek. '
+          'Bu işlem geri alınamaz. Devam edilsin mi?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('İptal'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Ayı Sil'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+
+    setState(() => _deletingMonth = true);
+    final token = context.read<AuthProvider>().token!;
+    final dutyProvider = context.read<DutyProvider>();
+    var deleted = 0;
+    var failed = 0;
+    for (final duty in duties) {
+      try {
+        await dutyProvider.delete(token, duty.id);
+        deleted++;
+      } catch (_) {
+        failed++;
+      }
+    }
+    await dutyProvider.fetchByMonth(token, _year, _month);
+    if (!mounted) return;
+    setState(() => _deletingMonth = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '$deleted nöbet silindi ve puanlar düşüldü'
+          '${failed > 0 ? ' · $failed nöbet silinemedi' : ''}',
+        ),
+        backgroundColor: failed == 0 ? AppTheme.success : AppTheme.warning,
+      ),
+    );
   }
 
   Future<void> _showSwapDialog(Duty targetDuty) async {
@@ -256,7 +317,7 @@ class _MonthlyCalendarScreenState extends State<MonthlyCalendarScreen> {
         backgroundColor: AppTheme.primary,
         foregroundColor: Colors.white,
         actions: [
-          if (isAdmin)
+          if (isAdmin) ...[
             IconButton(
               icon: _filling
                   ? const SizedBox(
@@ -265,8 +326,19 @@ class _MonthlyCalendarScreenState extends State<MonthlyCalendarScreen> {
                     )
                   : const Icon(Icons.auto_awesome),
               tooltip: 'Ayı Otomatik Doldur',
-              onPressed: _filling ? null : _autoFill,
+              onPressed: _filling || _deletingMonth ? null : _autoFill,
             ),
+            IconButton(
+              icon: _deletingMonth
+                  ? const SizedBox(
+                      width: 20, height: 20,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : const Icon(Icons.delete_sweep_outlined),
+              tooltip: 'Ayı Sil',
+              onPressed: _filling || _deletingMonth ? null : _deleteMonth,
+            ),
+          ],
         ],
       ),
       body: Column(
@@ -282,7 +354,7 @@ class _MonthlyCalendarScreenState extends State<MonthlyCalendarScreen> {
           Expanded(
             child: Consumer<DutyProvider>(
               builder: (context, prov, child) {
-                if (prov.monthlyLoading || _filling) {
+                if (prov.monthlyLoading || _filling || _deletingMonth) {
                   return const Center(child: CircularProgressIndicator());
                 }
                 return _CalendarGrid(
